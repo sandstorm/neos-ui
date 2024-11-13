@@ -19,6 +19,7 @@ use Neos\ContentRepository\Core\Feature\NodeDisabling\Command\EnableNodeAggregat
 use Neos\ContentRepository\Core\Feature\NodeModification\Command\SetNodeProperties;
 use Neos\ContentRepository\Core\Feature\NodeModification\Dto\PropertyValuesToWrite;
 use Neos\ContentRepository\Core\Feature\NodeReferencing\Command\SetNodeReferences;
+use Neos\ContentRepository\Core\Feature\NodeReferencing\Dto\NodeReferencesForName;
 use Neos\ContentRepository\Core\Feature\NodeReferencing\Dto\NodeReferencesToWrite;
 use Neos\ContentRepository\Core\Feature\NodeTypeChange\Command\ChangeNodeAggregateType;
 use Neos\ContentRepository\Core\Feature\NodeTypeChange\Dto\NodeAggregateTypeChangeChildConstraintConflictResolutionStrategy;
@@ -239,8 +240,12 @@ class Property extends AbstractChange
                 $subject->workspaceName,
                 $subject->aggregateId,
                 $subject->originDimensionSpacePoint,
-                ReferenceName::fromString($propertyName),
-                NodeReferencesToWrite::fromNodeAggregateIds(NodeAggregateIds::fromArray($destinationNodeAggregateIds))
+                NodeReferencesToWrite::create(
+                    NodeReferencesForName::fromTargets(
+                        ReferenceName::fromString($propertyName),
+                        NodeAggregateIds::fromArray($destinationNodeAggregateIds)
+                    )
+                )
             )
         );
     }

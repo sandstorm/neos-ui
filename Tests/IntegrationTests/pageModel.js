@@ -59,7 +59,7 @@ export class PublishDropDown {
 
     static publishDropdownDiscardAll = ReactSelector('PublishDropDown ContextDropDownContents').find('button').withText('Discard all');
 
-    static publishDropdownPublishAll = ReactSelector('PublishDropDown ShallowDropDownContents').find('button').withText('Publish all');
+    static publishDropdownPublishAll = ReactSelector('PublishDropDown ContextDropDownContents').find('button').withText('Publish all');
 
     static async discardAll() {
         const $discardAllBtn = Selector(this.publishDropdownDiscardAll);
@@ -107,6 +107,7 @@ export class PublishDropDown {
                 timeout: 30000
             });
         await t.click($acknowledgeBtn);
+        await t.wait(2000);
     }
 }
 

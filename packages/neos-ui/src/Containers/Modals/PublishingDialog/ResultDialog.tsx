@@ -277,7 +277,7 @@ export const ResultDialog: React.FC<{
         <Dialog
             actions={props.result.phase === PublishingPhase.ERROR ? [
                 <Button
-                    id={`${variant.id}-Acknowledge`}
+                    id={`${variant.id}-Acknowledge-Error`}
                     key="acknowledge"
                     style="lighter"
                     hoverStyle="brand"

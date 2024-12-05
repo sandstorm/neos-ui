@@ -145,7 +145,7 @@ jobs:
             echo "Using target branch: $TARGET_BRANCH"
       - run:
           name: Prepare and run e2e tests
-          no_output_timeout: 30m
+          no_output_timeout: 45m
           command: |
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

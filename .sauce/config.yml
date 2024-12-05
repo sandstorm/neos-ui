@@ -18,8 +18,8 @@ testcafe:
 # Controls what files are available in the context of a test run (unless explicitly excluded by .sauceignore).
 rootDir: ./
 suites:
-  - name: "Tests in Firefox on Windows"
-    browserName: "firefox"
+  - name: "Tests in Chrome on Windows"
+    browserName: "chrome"
     src:
       - "Tests/IntegrationTests/Fixtures/*/*.e2e.js"
     platformName: "Windows 10"

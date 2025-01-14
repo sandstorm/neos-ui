@@ -21,6 +21,7 @@ use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Neos\Domain\Repository\DomainRepository;
 use Neos\Neos\Domain\Repository\SiteRepository;
 use Neos\Neos\Domain\Service\NodeTypeNameFactory;
+use Neos\Neos\Domain\Service\UserService;
 use Neos\Neos\Domain\Service\WorkspaceService;
 use Neos\Neos\FrontendRouting\NodeUriBuilderFactory;
 use Neos\Neos\FrontendRouting\SiteDetection\SiteDetectionResult;
@@ -107,6 +108,12 @@ class BackendController extends ActionController
 
     /**
      * @Flow\Inject
+     * @var UserService
+     */
+    protected $userService;
+
+    /**
+     * @Flow\Inject
      * @var InitialStateProviderInterface
      */
     protected $initialStateProvider;
@@ -135,6 +142,11 @@ class BackendController extends ActionController
         $contentRepository = $this->contentRepositoryRegistry->get($siteDetectionResult->contentRepositoryId);
 
         $nodeAddress = $node !== null ? NodeAddress::fromJsonString($node) : null;
+        $user = $this->userService->getCurrentUser();
+
+        if ($user === null) {
+            $this->redirectToUri($this->uriBuilder->uriFor('index', [], 'Login', 'Neos.Neos'));
+        }
 
         $this->workspaceService->createPersonalWorkspaceForUserIfMissing($siteDetectionResult->contentRepositoryId, $user);
         $workspace = $this->workspaceService->getPersonalWorkspaceForUser($siteDetectionResult->contentRepositoryId, $user->getId());
@@ -170,6 +182,7 @@ class BackendController extends ActionController
             $node = $subgraph->findNodeById($nodeAddress->aggregateId);
         }
 
+        // todo duplicate user logic see above $this->userService->getBackendUser() is never null here ... pass the user instead to the method?
         $user = $this->userProvider->getUser();
         if (!$user) {
             $this->redirectToUri($this->uriBuilder->uriFor('index', [], 'Login', 'Neos.Neos'));

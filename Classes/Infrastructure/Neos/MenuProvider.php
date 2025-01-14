@@ -66,7 +66,7 @@ final class MenuProvider implements MenuProviderInterface
     }
 
     /**
-     * @return array<int,array{icon:string,label:string,uri:string,isActive:bool,target:string,skipI18n:bool}>
+     * @return array<int,array{icon:string,label:string,uri:string,isActive:bool,skipI18n:bool}>
      */
     private function buildChildrenForSites(ControllerContext $controllerContext): array
     {

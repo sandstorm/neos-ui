@@ -37,12 +37,12 @@ export const bootstrap = _editorConfig => {
 };
 
 export const createEditor = store => async options => {
-    const {propertyDomNode, propertyName, editorOptions, globalRegistry, userPreferences, onChange} = options;
+    const {propertyDomNode, propertyName, editorOptions, globalRegistry, userPreferences, onChange, isReadOnly} = options;
     const ckEditorConfig = editorConfig.configRegistry.getCkeditorConfig({
         editorOptions,
         userPreferences,
         globalRegistry,
-        propertyDomNode
+        propertyDomNode,
     });
 
     class NeosEditor extends DecoupledEditor {
@@ -58,26 +58,34 @@ export const createEditor = store => async options => {
     return NeosEditor
         .create(propertyDomNode, ckEditorConfig)
         .then(editor => {
-            const debouncedOnChange = debounce(() => onChange(cleanupContentBeforeCommit(editor.getData())), 1500, {maxWait: 5000});
-            editor.model.document.on('change:data', debouncedOnChange);
-            editor.ui.focusTracker.on('change:isFocused', event => {
-                if (!event.source.isFocused) {
-                    // when another editor is focused commit all possible pending changes
-                    debouncedOnChange.flush();
-                    return
-                }
+            editor.isReadOnly = isReadOnly;
 
-                currentEditor = editor;
-                editorConfig.setCurrentlyEditedPropertyName(propertyName);
-                handleUserInteractionCallback();
-            });
+            // Set placeholder text as Data if editor is empty because readOnly mode hides the placeholder
+            if (isReadOnly && editor.getData() === '') {
+                editor.setData(ckEditorConfig.placeholder, {doNotFireChange: true});
+            } else {
+                const debouncedOnChange = debounce(() => onChange(cleanupContentBeforeCommit(editor.getData())), 1500, {maxWait: 5000});
+                editor.model.document.on('change:data', debouncedOnChange);
+                editor.ui.focusTracker.on('change:isFocused', event => {
+                    if (!event.source.isFocused) {
+                        // when another editor is focused commit all possible pending changes
+                        debouncedOnChange.flush();
+                        return
+                    }
 
-            editor.keystrokes.set('Ctrl+K', (_, cancel) => {
-                store.dispatch(actions.UI.ContentCanvas.toggleLinkEditor());
-                cancel();
-            });
+                    currentEditor = editor;
+                    editorConfig.setCurrentlyEditedPropertyName(propertyName);
+                    handleUserInteractionCallback();
+                });
 
-            editor.model.document.on('change', () => handleUserInteractionCallback());
+                editor.keystrokes.set('Ctrl+K', (_, cancel) => {
+                    store.dispatch(actions.UI.ContentCanvas.toggleLinkEditor());
+                    cancel();
+                });
+
+                editor.model.document.on('change', () => handleUserInteractionCallback());
+            }
+
             return editor;
         }).catch(e => {
             if (e instanceof TypeError && e.message.match(/Class constructor .* cannot be invoked without 'new'/)) {

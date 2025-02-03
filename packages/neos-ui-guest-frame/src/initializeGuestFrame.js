@@ -112,9 +112,11 @@ export default ({globalRegistry, store}) => function * initializeGuestFrame() {
 
     const editPreviewMode = $get(['ui', 'editPreviewMode'], state);
     const editPreviewModes = globalRegistry.get('frontendConfiguration').get('editPreviewModes');
-    const isWorkspaceReadOnly = selectors.CR.Workspaces.isWorkspaceReadOnlySelector(state);
     const currentEditMode = editPreviewModes[editPreviewMode];
-    if (!currentEditMode || !currentEditMode.isEditingMode || isWorkspaceReadOnly) {
+
+    // ReadOnly workspaces are handled by ckEditor directly
+    // TODO: this will break other editors, correct?
+    if (!currentEditMode || !currentEditMode.isEditingMode) {
         return;
     }
 

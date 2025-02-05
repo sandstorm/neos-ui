@@ -4,6 +4,8 @@ import {actions} from '@neos-project/neos-ui-redux-store';
 import {validateElement} from '@neos-project/neos-ui-validators';
 
 import {getGuestFrameWindow, closestContextPathInGuestFrame} from './dom';
+// TODO: this import feels foreign to the rest of neos code, but it feels strange to import the complete selectors object
+import {isWorkspaceReadOnlySelector} from '@neos-project/neos-ui-redux-store/src/CR/Workspaces/selectors';
 
 export default ({store, globalRegistry, nodeTypesRegistry, inlineEditorRegistry, nodes}) => propertyDomNode => {
     const guestFrameWindow = getGuestFrameWindow();
@@ -61,6 +63,7 @@ export default ({store, globalRegistry, nodeTypesRegistry, inlineEditorRegistry,
         try {
             if (!propertyDomNode.dataset.neosInlineEditorIsInitialized) {
                 const userPreferences = $get('user.preferences', store.getState());
+                const isReadOnly = isWorkspaceReadOnlySelector(store.getState());
 
                 createInlineEditor({
                     propertyDomNode,
@@ -70,10 +73,21 @@ export default ({store, globalRegistry, nodeTypesRegistry, inlineEditorRegistry,
                     editorOptions,
                     globalRegistry,
                     userPreferences,
-                    persistChange: change => store.dispatch(
-                        actions.Changes.persistChanges([change])
-                    ),
+                    isReadOnly,
+                    persistChange: change => {
+                        if (isReadOnly) {
+                            return;
+                        }
+
+                        store.dispatch(
+                            actions.Changes.persistChanges([change])
+                        )
+                    },
                     onChange: value => {
+                        if (isReadOnly) {
+                            return;
+                        }
+
                         const validationResult = validateElement(value, $get(['properties', propertyName], nodeType), globalRegistry.get('validators'));
                         // Update inline validation errors
                         store.dispatch(

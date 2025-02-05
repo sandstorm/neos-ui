@@ -82,6 +82,7 @@ class NodePolicyService
             'disallowedNodeTypes' => $this->getDisallowedNodeTypes($node),
             'canRemove' => $this->canRemoveNode($node),
             'canEdit' => $this->canEditNode($node),
+            'canView' => $this->canReadNode($node),
             'disallowedProperties' => $this->getDisallowedProperties($node)
         ];
     }
@@ -98,6 +99,22 @@ class NodePolicyService
 
         return $this->privilegeManager->isGranted(
             NodeTreePrivilege::class,
+            new NodePrivilegeSubject($node)
+        );
+    }
+
+    /**
+     * @param NodeInterface $node
+     * @return bool
+     */
+    public function canReadNode(NodeInterface $node): bool
+    {
+        if (!isset(self::getUsedPrivilegeClassNames($this->objectManager)[ReadNodePropertyPrivilege::class])) {
+            return true;
+        }
+
+        return $this->privilegeManager->isGranted(
+            ReadNodePropertyPrivilege::class,
             new NodePrivilegeSubject($node)
         );
     }

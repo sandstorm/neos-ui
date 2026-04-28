@@ -73,4 +73,42 @@ export class NeosBackendPage {
     refreshDocumentTreeButton() {
         return this.page.locator("#neos-PageTree-RefreshPageTree");
     }
+
+    /**
+     * Badge rendered inside the currently active inspector tab when validation errors are present.
+     * The Badge component renders <div class="...badge..."> wrapping its label.
+     */
+    activeInspectorTabBadge() {
+        return this.page.locator('[role="tab"][aria-selected="true"] [class*="badge"]');
+    }
+
+    /**
+     * Tree node label by exact text. The tree__item__nodeHeader__itemLabel attribute is rendered
+     * by the react-ui-components Tree component on the <a> wrapping the label.
+     */
+    treeNodeLabel(name: string) {
+        return this.page
+            .locator('a[data-neos-integrational-test="tree__item__nodeHeader__itemLabel"]')
+            .getByText(name, {exact: true});
+    }
+
+    documentTreeSearchToggle() {
+        return this.page.locator("#btn-ToggleDocumentTreeFilter");
+    }
+
+    documentTreeSearchWrapper() {
+        return this.page.locator("#neos-NodeTreeSearchInput");
+    }
+
+    documentTreeSearchInput() {
+        return this.page.locator('#neos-NodeTreeSearchInput input[type="search"]');
+    }
+
+    documentTreeSearchClearButton() {
+        return this.page.locator("#neos-NodeTreeSearchInput-btn-reset");
+    }
+
+    documentTreeFilter() {
+        return this.page.locator("#neos-NodeTreeFilter-SelectBox");
+    }
 }

@@ -1,4 +1,5 @@
 import type {Page} from "@playwright/test";
+import {contentFrame} from "./content-iframe";
 
 export class NeosLoginPage {
     constructor(private readonly page: Page) {
@@ -144,5 +145,58 @@ export class NeosBackendPage {
 
     insertModeApplyButton() {
         return this.page.locator("#neos-InsertModeModal-apply");
+    }
+
+    // ── Node creation flow ────────────────────────────────────────────────────
+
+    pageTreeAddNodeButton() {
+        return this.page.locator("#neos-PageTree-AddNode");
+    }
+
+    contentTreeToggleButton() {
+        return this.page.locator("#neos-ContentTree-ToggleContentTree");
+    }
+
+    contentTreeAddNodeButton() {
+        return this.page.locator("#neos-ContentTree-AddNode");
+    }
+
+    /** Inline UI's "Add new" button — rendered inside the content iframe by neos-ui-guest-frame. */
+    inlineToolbarAddNodeButton() {
+        return this.contentFrame().locator("#neos-InlineToolbar-AddNode");
+    }
+
+    /**
+     * Pick a NodeType from the SelectNodeType dialog by visible label.
+     * The dialog is identified by id "neos-SelectNodeTypeDialog"; node-type items render
+     * a button containing the localized label text.
+     */
+    selectNodeTypeItem(label: string) {
+        return this.page
+            .locator("#neos-SelectNodeTypeDialog button")
+            .filter({hasText: label})
+            .first();
+    }
+
+    nodeCreationDialogTitleInput() {
+        return this.page.locator("#neos-NodeCreationDialog-Body input").first();
+    }
+
+    nodeCreationDialogConfirmButton() {
+        return this.page.locator("#neos-NodeCreationDialog-CreateNew");
+    }
+
+    nodeCreationDialogBackButton() {
+        return this.page.locator("#neos-NodeCreationDialog-Back");
+    }
+
+    /** The "Insert mode" dialog has plain id="into" / id="before" / id="after" buttons. */
+    insertModeIntoButtonInline() {
+        return this.page.locator("button#into");
+    }
+
+    /** Returns a FrameLocator for the Neos content iframe (delegates to the helper). */
+    contentFrame() {
+        return contentFrame(this.page);
     }
 }

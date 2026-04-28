@@ -1,0 +1,79 @@
+name: E2E Tests Playwright
+on:
+  workflow_dispatch:
+  push:
+    branches: [ '[0-9]+.[0-9]' ]
+  pull_request:
+    branches: [ '[0-9]+.[0-9]' ]
+
+jobs:
+  test:
+    name: "Playwright Browser Tests (${{ matrix.neos }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Each matrix entry filters by the matching Gherkin tag (e.g. @onedimension).
+        # New tagged features automatically participate without further wiring.
+        neos: [onedimension, twodimensions]
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node (repo root, for `make build`)
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache-dependency-path: 'yarn.lock'
+          cache: 'yarn'
+
+      - name: Install root npm dependencies
+        run: make install
+
+      - name: Build JS bundle (frontendDevelopmentMode reads from Resources/Public/Build)
+        run: make build
+
+      - name: Setup Node (Tests/E2E, for Playwright + playwright-bdd)
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: 'Tests/E2E/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'Tests/E2E/package-lock.json'
+
+      - name: Install Tests/E2E dependencies
+        working-directory: Tests/E2E
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: Tests/E2E
+        run: npx playwright install --with-deps
+
+      - name: Pre-build SUT Docker image (cached layers speed up the test run)
+        run: docker compose -f Tests/E2E/system_under_test/docker-compose.yaml build --pull
+
+      - name: Run Playwright tests (filtered by @${{ matrix.neos }})
+        working-directory: Tests/E2E
+        run: npm run test -- --grep "@${{ matrix.neos }}"
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: playwright-report-${{ matrix.neos }}
+          path: Tests/E2E/playwright-report/
+          retention-days: 30
+
+      - name: Upload Playwright test results
+        uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: playwright-test-results-${{ matrix.neos }}
+          path: Tests/E2E/test-results/
+          retention-days: 30
+
+      - name: Show SUT container logs on failure
+        if: ${{ failure() }}
+        run: |
+          docker compose -f Tests/E2E/system_under_test/docker-compose.yaml logs --no-color

@@ -55,4 +55,5 @@ enter-sut:
 ## Stop the SUT containers and remove their volumes.
 sut-down:
 	echo "${YELLOW}Shutting down SUT and removing volumes.${RESET}"
-	docker compose -f $(NEOS_COMPOSE) down -v
+	docker compose -f $(NEOS_COMPOSE) down
+	docker volume rm neos_ui_e2e_db_neos_data

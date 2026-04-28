@@ -111,4 +111,38 @@ export class NeosBackendPage {
     documentTreeFilter() {
         return this.page.locator("#neos-NodeTreeFilter-SelectBox");
     }
+
+    /**
+     * The OUTER container <div role="treeitem"> for a tree node, identified by the unique
+     * label inside it. The inner label <a> also carries role="treeitem"; we restrict to <div>
+     * so we get the parent container that holds both the header and any nested children.
+     *
+     * See packages/react-ui-components/src/Tree/node.js — the outer <div role="treeitem">
+     * wraps the header (with the label <a>) and the nested children container.
+     */
+    treeNodeContainer(name: string) {
+        return this.treeNodeLabel(name).locator(
+            'xpath=ancestor::div[@role="treeitem"][1]',
+        );
+    }
+
+    pageTreeCutSelectedNodeButton() {
+        return this.page.locator("#neos-PageTree-CutSelectedNode");
+    }
+
+    pageTreePasteClipboardNodeButton() {
+        return this.page.locator("#neos-PageTree-PasteClipBoardNode");
+    }
+
+    /**
+     * The "into" insert-mode button that appears in the InsertModeSelector dialog
+     * after a paste / drop. The dialog is committed via #neos-InsertModeModal-apply.
+     */
+    insertModeIntoButton() {
+        return this.page.locator("#into");
+    }
+
+    insertModeApplyButton() {
+        return this.page.locator("#neos-InsertModeModal-apply");
+    }
 }

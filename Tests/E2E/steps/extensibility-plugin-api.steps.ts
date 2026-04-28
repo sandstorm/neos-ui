@@ -20,6 +20,7 @@ type TestPluginExports = {
     legacyFrontendConfigurationAccess: Record<string, string>;
 };
 
+// TODO: use globalThis instead of window object?
 declare global {
     interface Window {
         neosUiTestPlugin: TestPluginExports;

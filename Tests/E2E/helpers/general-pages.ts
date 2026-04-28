@@ -57,4 +57,20 @@ export class NeosBackendPage {
         }
         return this.page.locator("#neos-ToggleInspector");
     }
+
+    /**
+     * Inspector property field by NodeType property name.
+     * Renders as e.g. <input id="__neos__editor__property---title" />.
+     */
+    inspectorField(propertyName: string) {
+        return this.page.locator(`#__neos__editor__property---${propertyName}`);
+    }
+
+    inspectorApplyButton() {
+        return this.page.locator("#neos-Inspector-Apply");
+    }
+
+    refreshDocumentTreeButton() {
+        return this.page.locator("#neos-PageTree-RefreshPageTree");
+    }
 }

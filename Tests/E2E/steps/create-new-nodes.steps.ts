@@ -148,15 +148,9 @@ When("I open the inline content creation dialog", async ({page}) => {
 });
 
 When("I click the help icon for the {string} node type", async ({page}, label: string) => {
-    // Each NodeTypeItem row contains: (1) a button with the label, (2) an optional
-    // help button containing a circle-question SVG. The help button follows the label
-    // button as a sibling within the same NodeTypeItem container.
-    const labelBtn = page
-        .locator("#neos-SelectNodeTypeDialog button")
-        .filter({hasText: label})
-        .first();
-    await labelBtn
-        .locator("xpath=following-sibling::button[.//*[@data-icon='circle-question']]")
+    await page
+        .locator("#neos-SelectNodeTypeDialog")
+        .getByTestId(`help-button-for-${label}`)
         .click();
 });
 
@@ -167,12 +161,10 @@ Then("the node type help should contain bold text {string}", async ({page}, text
 });
 
 Then("the {string} node type should have no help icon", async ({page}, label: string) => {
-    const labelBtn = page
-        .locator("#neos-SelectNodeTypeDialog button")
-        .filter({hasText: label})
-        .first();
     await expect(
-        labelBtn.locator("xpath=following-sibling::button[.//*[@data-icon='circle-question']]"),
+        page
+            .locator("#neos-SelectNodeTypeDialog")
+            .getByTestId(`help-button-for-${label}`)
     ).toHaveCount(0);
 });
 

@@ -1,4 +1,4 @@
-import type {FrameLocator, Page} from "@playwright/test";
+import type {FrameLocator, Locator, Page} from "@playwright/test";
 
 /**
  * FrameLocator for the Neos content iframe (named `neos-content-main`).
@@ -49,6 +49,32 @@ export async function setInlineEditorContent(
             },
             {text, tagName},
         );
+}
+
+/**
+ * Locator-based variant of `setInlineEditorContent` — useful when the target needs to be
+ * scoped via Playwright's locator API (e.g. `.locator('.test-container').last()`),
+ * which CSS selectors like `:nth-of-class` cannot express.
+ */
+export async function setInlineEditorContentOn(
+    target: Locator,
+    text: string,
+    textType: keyof typeof headingTagMap | "" = "",
+): Promise<void> {
+    const tagName = textType ? headingTagMap[textType] : "";
+    await target.evaluate(
+        (el, args) => {
+            const editor = (el as HTMLElement).closest(".ck-editor__editable") as HTMLElement & {
+                ckeditorInstance?: {data: {set: (html: string) => void}};
+            };
+            if (!editor || !editor.ckeditorInstance) {
+                throw new Error("No CKEditor instance attached to ancestor");
+            }
+            const content = args.tagName ? `<${args.tagName}>${args.text}</${args.tagName}>` : args.text;
+            editor.ckeditorInstance.data.set(content);
+        },
+        {text, tagName},
+    );
 }
 
 /** Clear an inline CKEditor instance via the same data.set() API. */

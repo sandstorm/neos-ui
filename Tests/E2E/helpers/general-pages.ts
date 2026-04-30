@@ -135,12 +135,28 @@ export class NeosBackendPage {
         return this.page.locator("#neos-PageTree-PasteClipBoardNode");
     }
 
+    contentTreeCopySelectedNodeButton() {
+        return this.page.locator("#neos-ContentTree-CopySelectedNode");
+    }
+
+    contentTreePasteClipboardNodeButton() {
+        return this.page.locator("#neos-ContentTree-PasteClipBoardNode");
+    }
+
     /**
-     * The "into" insert-mode button that appears in the InsertModeSelector dialog
-     * after a paste / drop. The dialog is committed via #neos-InsertModeModal-apply.
+     * Insert-mode buttons in the InsertModeSelector dialog (after paste / drop).
+     * The dialog is committed via #neos-InsertModeModal-apply.
      */
     insertModeIntoButton() {
         return this.page.locator("#into");
+    }
+
+    insertModeAfterButton() {
+        return this.page.locator("#after");
+    }
+
+    insertModeBeforeButton() {
+        return this.page.locator("#before");
     }
 
     insertModeApplyButton() {
@@ -198,5 +214,34 @@ export class NeosBackendPage {
     /** Returns a FrameLocator for the Neos content iframe (delegates to the helper). */
     contentFrame() {
         return contentFrame(this.page);
+    }
+
+    // ── Editor wrappers (anchor via the Label's htmlFor) ──────────────────────
+    //
+    // EditorEnvelope renders a Fragment with <Label htmlFor="__neos__editor__property---X">
+    // followed by the editor component. The ID is forwarded via `id` prop, but only some
+    // editors (TextInput) actually put it on the DOM — SelectBox and ImageEditor drop it.
+    //
+    // The wrapping div is added by the parent (NodeCreationDialog or InspectorEditorEnvelope).
+    // We anchor on the stable Label[for=...] and walk up to that wrapping div, which gives
+    // us a scope for finding buttons / select boxes belonging to that property.
+
+    inspectorEditorWrapper(propertyId: string) {
+        return this.page
+            .locator(`label[for="__neos__editor__property---${propertyId}"]`)
+            .locator("xpath=ancestor::div[1]");
+    }
+
+    creationDialogEditorWrapper(propertyId: string) {
+        return this.page
+            .locator(`label[for="__neos__editor__property---${propertyId}--creation-dialog"]`)
+            .locator("xpath=ancestor::div[1]");
+    }
+
+    /** Tree node label by partial text (substring match). */
+    treeNodeLabelContaining(name: string) {
+        return this.page
+            .locator('a[data-neos-integrational-test="tree__item__nodeHeader__itemLabel"]')
+            .filter({hasText: name});
     }
 }

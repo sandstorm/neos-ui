@@ -4,6 +4,9 @@ FROM dunglas/frankenphp:1-php${PHP_VERSION}-trixie
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 # reference: https://github.com/mlocati/docker-php-extension-installer
+# `gd` is required for the Imagine driver configured in Settings.yaml (driver: Gd).
+# Without it, asset import fails when refreshing image metadata, leaving the media
+# library empty and breaking any test that picks an asset.
 RUN install-php-extensions \
     intl \
     bcmath \
@@ -12,6 +15,7 @@ RUN install-php-extensions \
     pdo_mysql \
     xsl \
     ffi \
+    gd \
     redis
 
 RUN apt update \

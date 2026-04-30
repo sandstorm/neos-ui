@@ -5,7 +5,8 @@
     "module": "nodenext",
     "target": "ESNext",
     "lib": [
-      "esnext"
+      "esnext",
+      "dom"
     ],
     "types": [
       "node"

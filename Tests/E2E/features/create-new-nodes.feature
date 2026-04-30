@@ -17,6 +17,7 @@ Feature: Create new nodes
     Scenario: Inline content creation, debounced change requests, and validation
         Given I track content-change requests
         When I add a "Headline_Test" node via the content tree
+        And I wait for the change-request debounce to settle
         And I set the last headline's text to "Helloworld!" as a "heading1"
         Then the rendered content collection should contain "Helloworld!"
 

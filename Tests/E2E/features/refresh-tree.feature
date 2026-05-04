@@ -1,4 +1,3 @@
-@onedimension
 Feature: Refresh document tree
 
     Background:

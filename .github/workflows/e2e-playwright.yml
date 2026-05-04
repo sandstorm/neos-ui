@@ -8,14 +8,8 @@ on:
 
 jobs:
   test:
-    name: "Playwright Browser Tests (${{ matrix.neos }})"
+    name: "Playwright Browser Tests"
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # Each matrix entry filters by the matching Gherkin tag (e.g. @onedimension).
-        # New tagged features automatically participate without further wiring.
-        neos: [onedimension, twodimensions]
     timeout-minutes: 60
 
     steps:
@@ -60,15 +54,15 @@ jobs:
           echo "127.0.0.1 onedimension.localhost" | sudo tee -a /etc/hosts
           echo "127.0.0.1 twodimensions.localhost" | sudo tee -a /etc/hosts
 
-      - name: Run Playwright tests (filtered by @${{ matrix.neos }})
+      - name: Run Playwright tests
         working-directory: Tests/E2E
-        run: npm run test -- --grep "@${{ matrix.neos }}"
+        run: npm run test
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
-          name: playwright-report-${{ matrix.neos }}
+          name: playwright-report
           path: Tests/E2E/playwright-report/
           retention-days: 30
 
@@ -76,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
-          name: playwright-test-results-${{ matrix.neos }}
+          name: playwright-test-results
           path: Tests/E2E/test-results/
           retention-days: 30
 

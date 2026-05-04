@@ -1,4 +1,3 @@
-@onedimension
 Feature: Document tree search and filter
 
     Background:

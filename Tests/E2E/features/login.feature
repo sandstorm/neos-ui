@@ -1,4 +1,3 @@
-@onedimension
 Feature: Login flow with default settings
 
     Background:

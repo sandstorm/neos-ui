@@ -1,4 +1,3 @@
-@onedimension
 Feature: Inspector validation
 
     The inspector renders a validation badge on its tabs when required properties

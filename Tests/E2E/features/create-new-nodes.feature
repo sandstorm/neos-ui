@@ -1,4 +1,3 @@
-@onedimension
 Feature: Create new nodes
 
     Background:

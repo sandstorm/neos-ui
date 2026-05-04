@@ -1,4 +1,3 @@
-@onedimension
 Feature: Discard workspace changes
 
     Discarding throws away the user's pending changes in the personal workspace.

@@ -1,4 +1,3 @@
-@onedimension
 Feature: Extensibility plugin API
 
     The Neos UI exposes a manifest-based plugin API that lets third-party packages

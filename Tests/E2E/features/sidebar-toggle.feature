@@ -1,4 +1,3 @@
-@onedimension
 Feature: Toggle backend sidebars
 
     Background:

@@ -1,4 +1,3 @@
-@twodimensions
 Feature: Switch between dimensions
 
     Mirrors Tests/IntegrationTests/Fixtures/2Dimension/switchingDimensions.e2e.js.

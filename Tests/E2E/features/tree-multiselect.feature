@@ -1,4 +1,3 @@
-@onedimension
 Feature: Move multiple document tree nodes at once
 
     The "Tree multiselect" page in the test site has four child pages MultiA-D as

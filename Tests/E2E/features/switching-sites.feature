@@ -1,4 +1,3 @@
-@twodimensions
 Feature: Switch between sites via the main menu
 
     Mirrors Tests/IntegrationTests/Fixtures/2Dimension/switchingSites.e2e.js. The

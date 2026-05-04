@@ -18,6 +18,15 @@ When(
     },
 );
 
+When(
+    "I select {string} in the single dimension switcher",
+    async ({page}, optionLabel: string) => {
+        const backend = new NeosBackendPage(page);
+        await backend.singleDimensionSwitcherHeader().click();
+        await backend.dimensionSelectorOption(optionLabel).click();
+    },
+);
+
 When("I apply the dimension change", async ({page}) => {
     const backend = new NeosBackendPage(page);
     await backend.dimensionSwitcherApplyButton().click();

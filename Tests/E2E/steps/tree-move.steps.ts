@@ -61,3 +61,13 @@ Then(
         await expect(childLabelInsideParent).toHaveCount(1);
     },
 );
+
+Then("no error flash message should be visible", async ({page}) => {
+    await expect(page.locator('[role="alert"][class*="error"]')).toHaveCount(0);
+});
+
+Then("no error screen should be visible in the content iframe", async ({page}) => {
+    await expect(
+        page.frameLocator('[name="neos-content-main"]').locator(".neos-error-screen"),
+    ).toHaveCount(0);
+});

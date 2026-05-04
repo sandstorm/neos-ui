@@ -39,17 +39,22 @@ export default defineConfig({
         stderr: "pipe",
     },
     projects: [
+        // Pin every project to the same viewport — the SelectBox positioning
+        // tests assert which CSS property the dropdown receives based on the
+        // calculation `header.y + 0.25 * window.innerHeight <= window.innerHeight`,
+        // so a different default viewport per browser would silently flip the
+        // expected branch.
         {
             name: 'chromium',
             use: {...devices['Desktop Chrome'], viewport: {width: 1280, height: 800}}
         },
         {
             name: 'firefox',
-            use: {...devices['Desktop Firefox']}
+            use: {...devices['Desktop Firefox'], viewport: {width: 1280, height: 800}}
         },
         {
             name: 'webkit',
-            use: {...devices['Desktop Safari']},
+            use: {...devices['Desktop Safari'], viewport: {width: 1280, height: 800}}
         }
     ],
 });

@@ -71,6 +71,37 @@ export class NeosBackendPage {
         return this.page.locator("#neos-Inspector-Apply");
     }
 
+    inspectorDiscardButton() {
+        return this.page.locator("#neos-Inspector-Discard");
+    }
+
+    /** "Sync from title" button next to the URI path segment property. */
+    uriPathSegmentSyncButton() {
+        return this.page.locator("#neos-UriPathSegmentEditor-sync");
+    }
+
+    /**
+     * The unapplied-changes overlay. When the inspector has dirty fields and
+     * is not currently prompting, the Inspector container portals a div with
+     * `unappliedChangesOverlay` class to `document.body`. Clicking it opens
+     * the UnappliedChangesDialog.
+     */
+    unappliedChangesOverlay() {
+        return this.page.locator('[class*="unappliedChangesOverlay"]');
+    }
+
+    unappliedChangesDialog() {
+        return this.page.locator("#neos-UnappliedChangesDialog");
+    }
+
+    unappliedChangesResumeButton() {
+        return this.page.locator("#neos-UnappliedChangesDialog-resume");
+    }
+
+    unappliedChangesDiscardButton() {
+        return this.page.locator("#neos-UnappliedChangesDialog-discard");
+    }
+
     refreshDocumentTreeButton() {
         return this.page.locator("#neos-PageTree-RefreshPageTree");
     }
@@ -338,6 +369,19 @@ export class NeosBackendPage {
     }
 
     /**
+     * The toolbar dimension SelectBox on a single-dimension site. The
+     * DimensionSwitcher renders this case directly (no outer DropDown.Stateless
+     * wrapper, no `dimensionCategory` listitem) — just the SelectBox inside a
+     * `singleDimensionDropdown` div. Selecting an option here commits
+     * immediately; there is no Apply button.
+     */
+    singleDimensionSwitcherHeader() {
+        return this.page.locator(
+            '[class*="singleDimensionDropdown"] [role="button"][aria-haspopup="true"]',
+        );
+    }
+
+    /**
      * Option inside the currently-open dimension SelectBox, matched by exact
      * label. SelectBox's DropDown.Contents uses scrollable={true} which
      * portals the <ul role="listbox"> to document.body, so we cannot scope
@@ -359,5 +403,122 @@ export class NeosBackendPage {
     /** "Create Empty" button on the NodeVariantCreationDialog. */
     nodeVariantCreationDialogCreateEmptyButton() {
         return this.page.locator("#neos-NodeVariantCreationDialog-CreateEmpty");
+    }
+
+    // ── SelectBox positioning ────────────────────────────────────────────────
+    //
+    // SelectBox renders the open option list via ReactDOM.createPortal to
+    // document.body (DropDown.Contents with scrollable={true}). The portal <ul>
+    // receives inline styles computed in `getCalculatedStyleFromProps` —
+    // `top` when the dropdown opens below, `bottom` when it opens above, and
+    // `display: none` when the SelectBox header is scrolled out of the
+    // user's view.
+    //
+    // We assert against those inline styles (what the implementation
+    // *decides*) rather than computed pixel positions (what the layout
+    // *resolves to*). That keeps the tests independent of viewport, scroll
+    // offset, and CSS-module class renames.
+
+    /** Header (clickable trigger) of the SelectBox inside the open NodeCreationDialog, by property id. */
+    creationDialogSelectBoxHeader(propertyId: string) {
+        return this.creationDialogEditorWrapper(propertyId)
+            .locator('[role="button"][aria-haspopup="true"]');
+    }
+
+    /** Header of the SelectBox inside the inspector, by property id. */
+    inspectorSelectBoxHeader(propertyId: string) {
+        return this.inspectorEditorWrapper(propertyId)
+            .locator('[role="button"][aria-haspopup="true"]');
+    }
+
+    /** Label DOM element for a creation-dialog property — usable as a hover target to scroll the dialog. */
+    creationDialogPropertyLabel(propertyId: string) {
+        return this.page.locator(
+            `label[for="__neos__editor__property---${propertyId}--creation-dialog"]`,
+        );
+    }
+
+    /** Label DOM element for an inspector property — usable as a hover target to scroll the inspector. */
+    inspectorPropertyLabel(propertyId: string) {
+        return this.page.locator(
+            `label[for="__neos__editor__property---${propertyId}"]`,
+        );
+    }
+
+    /**
+     * The portaled SelectBox option list (a direct child of <body> per
+     * DropDown.Contents with scrollable={true}). Returns inline styles that
+     * the positioning logic sets — callers assert which property is present.
+     */
+    async openSelectBoxInlineStyle(): Promise<{top: string; bottom: string; display: string}> {
+        return this.page
+            .locator('body > [role="listbox"][aria-label="dropdown"]')
+            .evaluate((el: HTMLElement) => ({
+                top: el.style.top,
+                bottom: el.style.bottom,
+                display: el.style.display,
+            }));
+    }
+
+    // ── Image editor (inspector image property + secondary-inspector cropper) ──
+
+    /**
+     * The crop IconButton inside an image inspector editor — class
+     * `cropButton` is set on the IconButton in
+     * `Editors/Image/Components/Controls/index.js`.
+     */
+    inspectorImageCropButton(propertyId: string) {
+        return this.inspectorEditorWrapper(propertyId).locator('[class*="cropButton"]');
+    }
+
+    /**
+     * The small preview <img> in the property editor's PreviewScreen (class
+     * `cropArea__image`). Its inline `top` style is recomputed from the
+     * configured crop area, so we use it as the change indicator.
+     */
+    inspectorImagePreviewThumbnail(propertyId: string) {
+        return this.inspectorEditorWrapper(propertyId).locator('img[class*="cropArea__image"]');
+    }
+
+    /** ReactCrop's outer drag area — the rectangle the user drags to define a crop. */
+    reactCropArea() {
+        return this.page.locator('.ReactCrop');
+    }
+
+    /** SecondaryInspector wrapper portal (class `secondaryInspector` in CSS-module form). */
+    secondaryInspector() {
+        return this.page.locator('[class*="secondaryInspector"]');
+    }
+
+    /** Visible content image in the rendered iframe — anchored on a class set in test fixture's Page.fusion. */
+    contentFrameImage(className: string) {
+        return contentFrame(this.page).locator(`.${className}`);
+    }
+
+    // ── Inspector RichTextEditor (CKEditor in secondary inspector) ────────────
+
+    /**
+     * The "Toggle the editor" Button rendered by the inspector CKEditor
+     * component (Neos.Neos/Inspector/Editors/RichTextEditor maps to CKEditor).
+     * Clicking opens the secondary inspector with a full CKEditor instance.
+     *
+     * The CKEditor inspector editor sets `hasOwnLabel: true`, so EditorEnvelope
+     * renders no `label[for="__neos__editor__property---<id>"]` we can scope by;
+     * the editor's outer div carries no unique identifier either. We anchor on
+     * the property's configured label text, which the editor renders verbatim
+     * inside the toggle button via `<I18n id={label}/>` (no translation needed
+     * for unknown keys — they fall back to the literal).
+     */
+    inspectorRteToggleButton(label: string) {
+        return this.page.getByRole("button", {name: label});
+    }
+
+    /**
+     * The CKEditor editable area rendered inside the secondary inspector's
+     * CKEditorWrap. CKEditor decorates the host div with `.ck-content` /
+     * `.ck-editor__editable` at runtime.
+     */
+    secondaryInspectorCkEditorEditable() {
+        return this.secondaryInspector().locator(".ck-content");
     }
 }

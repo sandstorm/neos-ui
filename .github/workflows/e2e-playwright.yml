@@ -53,6 +53,13 @@ jobs:
       - name: Pre-build SUT Docker image (cached layers speed up the test run)
         run: docker compose -f Tests/E2E/system_under_test/docker-compose.yaml build --pull
 
+      - name: Map test site hostnames to localhost
+        # Ubuntu's stub resolver does not handle *.localhost subdomains; the
+        # switching-sites scenarios need both hostnames to reach the SUT.
+        run: |
+          echo "127.0.0.1 onedimension.localhost" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 twodimensions.localhost" | sudo tee -a /etc/hosts
+
       - name: Run Playwright tests (filtered by @${{ matrix.neos }})
         working-directory: Tests/E2E
         run: npm run test -- --grep "@${{ matrix.neos }}"

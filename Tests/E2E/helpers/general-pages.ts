@@ -285,4 +285,79 @@ export class NeosBackendPage {
             .locator('a[data-neos-integrational-test="tree__item__nodeHeader__itemLabel"]')
             .filter({hasText: name});
     }
+
+    // ── Main menu drawer ──────────────────────────────────────────────────────
+
+    /** Toggle for the main drawer (PrimaryToolbar). */
+    menuToggle() {
+        return this.page.locator("#neos-MenuToggler");
+    }
+
+    /**
+     * Switch-site link inside the main drawer. Each site renders an anchor with
+     * a relative href like "/neos/switch/to/neos.test.twodimensions"; we anchor
+     * on that path prefix plus the hostname's leading label so the locator does
+     * not accidentally match other anchors that happen to contain the hostname
+     * (e.g. the "Show preview" link).
+     */
+    drawerSiteLink(hostname: string) {
+        const slug = hostname.split(".")[0];
+        return this.page.locator(`a[href^="/neos/switch/to/"][href*="${slug}"]`);
+    }
+
+    // ── DimensionSwitcher (multi-dimension toolbar dropdown) ──────────────────
+
+    /**
+     * Toolbar toggle that opens the multi-dimension switcher dropdown. The
+     * DropDown.Header renders one SelectedPreset span per active dimension —
+     * we anchor on the role/aria pair plus that distinctive child class so we
+     * don't collide with the PublishDropDown or other toolbar dropdowns.
+     */
+    dimensionSwitcherToggle() {
+        return this.page
+            .locator('[role="button"][aria-haspopup="true"]')
+            .filter({has: this.page.locator('[class*="selectPreset"]')});
+    }
+
+    /**
+     * Wrapper <li class="dimensionCategory"> for one dimension inside the open
+     * switcher dropdown. We scope by an exact match on the dimension's label
+     * (e.g. "Language", "Country") so the language and country sections are
+     * unambiguously distinguishable.
+     */
+    dimensionCategory(dimensionLabel: string) {
+        return this.page
+            .locator('[class*="dimensionCategory"]')
+            .filter({has: this.page.getByText(dimensionLabel, {exact: true})});
+    }
+
+    /** Header (click target) of one dimension's SelectBox. */
+    dimensionSelectorHeader(dimensionLabel: string) {
+        return this.dimensionCategory(dimensionLabel)
+            .locator('[role="button"][aria-haspopup="true"]');
+    }
+
+    /**
+     * Option inside the currently-open dimension SelectBox, matched by exact
+     * label. SelectBox's DropDown.Contents uses scrollable={true} which
+     * portals the <ul role="listbox"> to document.body, so we cannot scope
+     * the option lookup to the dimensionCategory; we anchor on the portaled
+     * listbox instead. Only one dimension SelectBox is expected to be open
+     * at a time.
+     */
+    dimensionSelectorOption(optionLabel: string) {
+        return this.page
+            .locator('body > [role="listbox"][aria-label="dropdown"]')
+            .getByText(optionLabel, {exact: true});
+    }
+
+    /** Apply button in the dimension switcher — commits transient presets. */
+    dimensionSwitcherApplyButton() {
+        return this.page.locator("#neos-DimensionSwitcher-Apply");
+    }
+
+    /** "Create Empty" button on the NodeVariantCreationDialog. */
+    nodeVariantCreationDialogCreateEmptyButton() {
+        return this.page.locator("#neos-NodeVariantCreationDialog-CreateEmpty");
+    }
 }

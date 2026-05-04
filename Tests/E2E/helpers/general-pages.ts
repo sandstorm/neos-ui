@@ -135,12 +135,53 @@ export class NeosBackendPage {
         return this.page.locator("#neos-PageTree-PasteClipBoardNode");
     }
 
+    pageTreeDeleteSelectedNodeButton() {
+        return this.page.locator("#neos-PageTree-DeleteSelectedNode");
+    }
+
     contentTreeCopySelectedNodeButton() {
         return this.page.locator("#neos-ContentTree-CopySelectedNode");
     }
 
     contentTreePasteClipboardNodeButton() {
         return this.page.locator("#neos-ContentTree-PasteClipBoardNode");
+    }
+
+    contentTreeDeleteSelectedNodeButton() {
+        return this.page.locator("#neos-ContentTree-DeleteSelectedNode");
+    }
+
+    /** Delete-node confirmation modal — id="neos-DeleteNodeModal-Confirm". */
+    deleteNodeModalConfirmButton() {
+        return this.page.locator("#neos-DeleteNodeModal-Confirm");
+    }
+
+    // ── PublishDropDown ───────────────────────────────────────────────────────
+    //
+    // The DropDown.Header from react-ui-components renders a `<div role="button"
+    // aria-haspopup="true">` rather than an HTML <button>. We anchor on those
+    // attributes inside the #neos-PublishDropDown wrapper.
+
+    publishDropDownToggle() {
+        return this.page.locator(
+            '#neos-PublishDropDown [role="button"][aria-haspopup="true"]',
+        );
+    }
+
+    publishDropDownPublishButton() {
+        return this.page.locator("#neos-PublishDropDown-Publish");
+    }
+
+    publishDropDownDiscardAllButton() {
+        return this.page.locator("#neos-PublishDropDown-DiscardAll");
+    }
+
+    discardDialogConfirmButton() {
+        return this.page.locator("#neos-DiscardDialog-Confirm");
+    }
+
+    discardDialogAcknowledgeButton() {
+        return this.page.locator("#neos-DiscardDialog-Acknowledge");
     }
 
     /**

@@ -190,7 +190,7 @@ export class NeosBackendPage {
     selectNodeTypeItem(label: string) {
         return this.page
             .locator("#neos-SelectNodeTypeDialog button")
-            .filter({hasText: label})
+            .filter({ hasText: new RegExp(`^${label}$`) })
             .first();
     }
 

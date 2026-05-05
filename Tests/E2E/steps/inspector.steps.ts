@@ -1,4 +1,4 @@
-import {expect} from "@playwright/test";
+import {expect, type Page} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
 import {NeosBackendPage} from "../helpers/general-pages";
 
@@ -94,4 +94,53 @@ Then("the active inspector tab should show {int} validation error(s)", async ({p
 Then("the active inspector tab should show no validation errors", async ({page}) => {
     const backend = new NeosBackendPage(page);
     await expect(backend.activeInspectorTabBadge()).toHaveCount(0);
+});
+
+// ── ClientEval: dependent SelectBox options in the inspector ─────────────────
+//
+// Mirrors the "creation dialog" variant in create-new-nodes.steps.ts but
+// targets the inspector's SelectBoxes after the node has been created. The
+// portaled <ul role="listbox"> is the same DropDown.Contents implementation;
+// only one is open at any given time.
+
+function inspectorSelectHeader(page: Page, field: string) {
+    const backend = new NeosBackendPage(page);
+    return backend.inspectorSelectBoxHeader(field).first();
+}
+
+function openDropdownOptions(page: Page) {
+    return page.locator('ul[role="listbox"][aria-label="dropdown"]');
+}
+
+Then(
+    "the inspector {string} select should offer {string}",
+    async ({page}, field: string, option: string) => {
+        await inspectorSelectHeader(page, field).click();
+        await expect(openDropdownOptions(page).getByText(option, {exact: true})).toBeVisible();
+        await inspectorSelectHeader(page, field).click();
+    },
+);
+
+Then(
+    "the inspector {string} select should not offer {string}",
+    async ({page}, field: string, option: string) => {
+        await inspectorSelectHeader(page, field).click();
+        await expect(openDropdownOptions(page).getByText(option, {exact: true})).toHaveCount(0);
+        await inspectorSelectHeader(page, field).click();
+    },
+);
+
+When(
+    "I choose {string} in the inspector {string} select",
+    async ({page}, value: string, field: string) => {
+        await inspectorSelectHeader(page, field).click();
+        await openDropdownOptions(page).getByText(value, {exact: true}).click();
+    },
+);
+
+When("I wait for the inspector to recalculate", async ({page}) => {
+    // The dependent SelectBox fetches updated options via a data source (AJAX).
+    // The original TestCafe test waited 2 s — we add a small buffer to stay
+    // clear of flakiness, mirroring the creation-dialog variant.
+    await page.waitForTimeout(2500);
 });

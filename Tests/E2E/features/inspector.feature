@@ -1,10 +1,8 @@
 Feature: Inspector property editing and unapplied changes
 
-    Mirrors test 1 of Tests/IntegrationTests/Fixtures/1Dimension/inspector.e2e.js
-    (the page-title editing flow + unapplied-changes dialog branches). The
-    second testcafe test in that fixture covered ClientEval-driven SelectBox
-    dependencies and is already exercised by the create-new-nodes scenario
-    "ClientEval updates dependent SelectBox options in the creation dialog".
+    Mirrors Tests/IntegrationTests/Fixtures/1Dimension/inspector.e2e.js — both
+    the page-title editing flow + unapplied-changes dialog branches (test 1)
+    and the ClientEval dependency between SelectBox properties (test 2).
 
     Background:
         Given A user with username "admin", password "password" and role "Neos.Neos:Administrator" exists
@@ -42,3 +40,13 @@ Feature: Inspector property editing and unapplied changes
         Then the unapplied-changes dialog should be visible
         When I discard the inspector changes from the unapplied-changes dialog
         Then the inspector "title" field should show "Discarding"
+
+    Scenario: ClientEval updates dependent SelectBox options in the inspector
+        When I open the content creation dialog for "NodeWithDependingProperties_Test"
+        And I confirm the node creation dialog
+        Then the inspector "dependingProperty" select should offer "label_1"
+        And the inspector "dependingProperty" select should not offer "label_2"
+        When I choose "even" in the inspector "propertyDependedOn" select
+        And I wait for the inspector to recalculate
+        Then the inspector "dependingProperty" select should offer "label_2"
+        And the inspector "dependingProperty" select should not offer "label_1"

@@ -12,6 +12,7 @@ const testDir = defineBddConfig({
 export default defineConfig({
     testDir,
     fullyParallel: false,
+    // workers: 1 is required: the SUT uses a single MariaDB instance and scenarios mutate global state
     workers: 1,
     retries: process.env.CI ? 1 : 0,
     timeout: 60_000,

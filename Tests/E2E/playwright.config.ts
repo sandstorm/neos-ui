@@ -31,7 +31,10 @@ export default defineConfig({
     },
     globalTeardown: "./global-teardown.ts",
     webServer: {
-        command: `echo "starting system under test with context ${FLOW_CONTEXT}"; FLOW_CONTEXT=${FLOW_CONTEXT} docker compose -f ./system_under_test/docker-compose.yaml up --build`,
+        // No `--build`: the image (`neos-ui-e2e-sut:9.0`) is built once by CI
+        // (or by `make setup-sut` locally) and re-used here.
+        // After editing the Dockerfile: Re-run `make setup-sut` to pick up the changes.
+        command: `echo "starting system under test with context ${FLOW_CONTEXT}"; FLOW_CONTEXT=${FLOW_CONTEXT} docker compose -f ./system_under_test/docker-compose.yaml up`,
         url: "http://localhost:8081/",
         reuseExistingServer: Boolean(REUSE_EXISTING_SUT),
         timeout: 600_000,
@@ -39,11 +42,6 @@ export default defineConfig({
         stderr: "pipe",
     },
     projects: [
-        // Pin every project to the same viewport — the SelectBox positioning
-        // tests assert which CSS property the dropdown receives based on the
-        // calculation `header.y + 0.25 * window.innerHeight <= window.innerHeight`,
-        // so a different default viewport per browser would silently flip the
-        // expected branch.
         {
             name: 'chromium',
             use: {...devices['Desktop Chrome'], viewport: {width: 1280, height: 800}}

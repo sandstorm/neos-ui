@@ -1,16 +1,13 @@
 services:
   neos:
     user: www-data:www-data
+    # Stable tag so CI can pre-build the image once with buildx + GHA layer cache and `docker compose up` then
+    # reuses it without rebuilding.
+    # The build block below is kept as a fallback for local dev (`make setup-sut`).
+    image: neos-ui-e2e-sut:9.0
     build:
       context: ../../../
       dockerfile: Tests/E2E/system_under_test/Dockerfile
-      args:
-        # minimum PHP version is '8.2' because that's the lowest version frankenPHP provides an image for.
-        # Reasoning: If it runs with PHP 8.2, it will also run with higher versions.
-        PHP_VERSION: '8.2'
-        # used to install the system under test
-        # which is a neos-base-distribution:^${NEOS_VERSION}
-        NEOS_VERSION: '9'
     environment:
       FLOW_CONTEXT: "${FLOW_CONTEXT:-Production/E2E-SUT}"
       # DB connection

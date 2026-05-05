@@ -44,12 +44,29 @@ jobs:
         working-directory: Tests/E2E
         run: npx playwright install --with-deps
 
-      - name: Pre-build SUT Docker image (cached layers speed up the test run)
-        run: docker compose -f Tests/E2E/system_under_test/docker-compose.yaml build --pull
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Pre-build SUT Docker image (with persistent layer cache)
+        # Builds the SUT image once and persists layers in GitHub's
+        # actions cache (`type=gha`). Subsequent runs restore layers
+        # from the cache, dropping the build from ~3 min to ~30-60s
+        # whenever the Dockerfile and overrides have not changed.
+        # `load: true` exposes the tagged image to the local Docker
+        # daemon so `docker compose up` (in the Playwright webServer
+        # step) finds it without rebuilding.
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Tests/E2E/system_under_test/Dockerfile
+          tags: neos-ui-e2e-sut:9.0
+          load: true
+          cache-from: type=gha,scope=sut
+          cache-to: type=gha,mode=max,scope=sut
 
       - name: Map test site hostnames to localhost
         # Ubuntu's stub resolver does not handle *.localhost subdomains; the
-        # switching-sites scenarios need both hostnames to reach the SUT.
+        # switching-sites scenarios need both hostnames to reach the SUT sites.
         run: |
           echo "127.0.0.1 onedimension.localhost" | sudo tee -a /etc/hosts
           echo "127.0.0.1 twodimensions.localhost" | sudo tee -a /etc/hosts

@@ -450,7 +450,7 @@ export class NeosBackendPage {
      * DropDown.Contents with scrollable={true}). Returns inline styles that
      * the positioning logic sets — callers assert which property is present.
      */
-    async openSelectBoxInlineStyle(): Promise<{top: string; bottom: string; display: string}> {
+    async openSelectBoxInlineStyle(): Promise<{ top: string; bottom: string; display: string }> {
         return this.page
             .locator('body > [role="listbox"][aria-label="dropdown"]')
             .evaluate((el: HTMLElement) => ({

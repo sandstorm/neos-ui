@@ -39,7 +39,7 @@ export async function setInlineEditorContent(
         .evaluate(
             (el, args) => {
                 const editor = (el as HTMLElement).closest(".ck-editor__editable") as HTMLElement & {
-                    ckeditorInstance?: {data: {set: (html: string) => void}};
+                    ckeditorInstance?: { data: { set: (html: string) => void } };
                 };
                 if (!editor || !editor.ckeditorInstance) {
                     throw new Error("No CKEditor instance attached to ancestor of selector");
@@ -65,7 +65,7 @@ export async function setInlineEditorContentOn(
     await target.evaluate(
         (el, args) => {
             const editor = (el as HTMLElement).closest(".ck-editor__editable") as HTMLElement & {
-                ckeditorInstance?: {data: {set: (html: string) => void}};
+                ckeditorInstance?: { data: { set: (html: string) => void } };
             };
             if (!editor || !editor.ckeditorInstance) {
                 throw new Error("No CKEditor instance attached to ancestor");
@@ -83,7 +83,7 @@ export async function clearInlineEditorContent(page: Page, selector: string): Pr
         .locator(selector)
         .evaluate((el) => {
             const editor = (el as HTMLElement).closest(".ck-editor__editable") as HTMLElement & {
-                ckeditorInstance?: {data: {set: (html: string) => void}};
+                ckeditorInstance?: { data: { set: (html: string) => void } };
             };
             if (!editor || !editor.ckeditorInstance) {
                 throw new Error("No CKEditor instance attached to ancestor of selector");
@@ -101,6 +101,10 @@ export async function clearInlineEditorContent(page: Page, selector: string): Pr
 export class ChangeRequestTracker {
     private count = 0;
 
+    get value(): number {
+        return this.count;
+    }
+
     async start(page: Page): Promise<void> {
         await page.route("**/neos/ui-services/change", async (route) => {
             if (route.request().method() === "POST") {
@@ -112,9 +116,5 @@ export class ChangeRequestTracker {
 
     reset(): void {
         this.count = 0;
-    }
-
-    get value(): number {
-        return this.count;
     }
 }

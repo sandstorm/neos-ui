@@ -1,8 +1,7 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
 import {NeosBackendPage} from "../helpers/general-pages";
-import {contentFrame} from "../helpers/content-iframe";
-import {setInlineEditorContentOn} from "../helpers/content-iframe";
+import {contentFrame, setInlineEditorContentOn} from "../helpers/content-iframe";
 
 const {When, Then} = createBdd();
 

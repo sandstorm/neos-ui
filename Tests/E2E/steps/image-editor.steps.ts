@@ -1,6 +1,6 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosImageEditor, NeosInspector} from "../helpers/pages";
 
 const {Given, When, Then} = createBdd();
 
@@ -13,8 +13,8 @@ let initialPreviewTop = "";
 Given(
     "I capture the initial src of the rendered {string} content image",
     async ({page}, className: string) => {
-        const backend = new NeosBackendPage(page);
-        const src = await backend.contentFrameImage(className).getAttribute("src");
+        const imageEditor = new NeosImageEditor(page);
+        const src = await imageEditor.contentImage(className).getAttribute("src");
         if (src === null) throw new Error(`No src attribute on .${className}`);
         initialContentImageSrc = src;
     },
@@ -23,9 +23,9 @@ Given(
 Given(
     "I capture the initial top offset of the inspector {string} preview thumbnail",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
-        initialPreviewTop = await backend
-            .inspectorImagePreviewThumbnail(propertyId)
+        const imageEditor = new NeosImageEditor(page);
+        initialPreviewTop = await imageEditor
+            .previewThumbnail(propertyId)
             .evaluate((el: HTMLElement) => el.style.top);
     },
 );
@@ -33,8 +33,8 @@ Given(
 When(
     "I open the crop tool in the {string} inspector editor",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.inspectorImageCropButton(propertyId).click();
+        const imageEditor = new NeosImageEditor(page);
+        await imageEditor.cropButton(propertyId).click();
     },
 );
 
@@ -45,8 +45,8 @@ When(
 When(
     "I drag the crop area by {int},{int} from offset {int},{int}",
     async ({page}, dx: number, dy: number, ox: number, oy: number) => {
-        const backend = new NeosBackendPage(page);
-        const box = await backend.reactCropArea().boundingBox();
+        const imageEditor = new NeosImageEditor(page);
+        const box = await imageEditor.reactCropArea().boundingBox();
         if (!box) throw new Error("ReactCrop area has no bounding box");
         await page.mouse.move(box.x + ox, box.y + oy);
         await page.mouse.down();
@@ -58,11 +58,11 @@ When(
 Then(
     "no unapplied-changes dialog should appear when I click on the secondary inspector",
     async ({page}) => {
-        const backend = new NeosBackendPage(page);
+        const inspector = new NeosInspector(page);
         // Click a known-empty area of the secondary inspector wrapper. Anywhere
         // on the wrapper that isn't itself an interactive control will do; we
         // pick the top-left corner of the panel.
-        await backend.secondaryInspector().click({position: {x: 1, y: 1}});
+        await inspector.secondary().click({position: {x: 1, y: 1}});
         await expect(page.locator("#neos-UnappliedChangesDialog")).toHaveCount(0);
     },
 );
@@ -70,10 +70,10 @@ Then(
 Then(
     "the inspector {string} preview top offset should differ from the initial offset",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
+        const imageEditor = new NeosImageEditor(page);
         await expect(async () => {
-            const current = await backend
-                .inspectorImagePreviewThumbnail(propertyId)
+            const current = await imageEditor
+                .previewThumbnail(propertyId)
                 .evaluate((el: HTMLElement) => el.style.top);
             expect(current).not.toBe(initialPreviewTop);
         }).toPass();
@@ -83,9 +83,9 @@ Then(
 Then(
     "the rendered {string} content image src should differ from the initial src",
     async ({page}, className: string) => {
-        const backend = new NeosBackendPage(page);
+        const imageEditor = new NeosImageEditor(page);
         await expect(async () => {
-            const current = await backend.contentFrameImage(className).getAttribute("src");
+            const current = await imageEditor.contentImage(className).getAttribute("src");
             expect(current).not.toBe(initialContentImageSrc);
         }).toPass();
     },

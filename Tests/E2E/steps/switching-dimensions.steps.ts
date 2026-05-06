@@ -1,46 +1,46 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosDialogs, NeosDimensionSwitcher} from "../helpers/pages";
 
 const {When, Then} = createBdd();
 
 When("I open the dimension switcher", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.dimensionSwitcherToggle().click();
+    const dimensionSwitcher = new NeosDimensionSwitcher(page);
+    await dimensionSwitcher.toggle().click();
 });
 
 When(
     "I select {string} in the {string} dimension",
     async ({page}, optionLabel: string, dimensionLabel: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.dimensionSelectorHeader(dimensionLabel).click();
-        await backend.dimensionSelectorOption(optionLabel).click();
+        const dimensionSwitcher = new NeosDimensionSwitcher(page);
+        await dimensionSwitcher.selectorHeader(dimensionLabel).click();
+        await dimensionSwitcher.option(optionLabel).click();
     },
 );
 
 When(
     "I select {string} in the single dimension switcher",
     async ({page}, optionLabel: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.singleDimensionSwitcherHeader().click();
-        await backend.dimensionSelectorOption(optionLabel).click();
+        const dimensionSwitcher = new NeosDimensionSwitcher(page);
+        await dimensionSwitcher.singleHeader().click();
+        await dimensionSwitcher.option(optionLabel).click();
     },
 );
 
 When("I apply the dimension change", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.dimensionSwitcherApplyButton().click();
+    const dimensionSwitcher = new NeosDimensionSwitcher(page);
+    await dimensionSwitcher.applyButton().click();
 });
 
 When("I create an empty variant for the dimension change", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.nodeVariantCreationDialogCreateEmptyButton().click();
+    const dialogs = new NeosDialogs(page);
+    await dialogs.nodeVariantCreateEmpty().click();
 });
 
 Then(
     "the {string} dimension should be set to {string}",
     async ({page}, dimensionLabel: string, optionLabel: string) => {
-        const backend = new NeosBackendPage(page);
-        await expect(backend.dimensionSelectorHeader(dimensionLabel)).toContainText(optionLabel);
+        const dimensionSwitcher = new NeosDimensionSwitcher(page);
+        await expect(dimensionSwitcher.selectorHeader(dimensionLabel)).toContainText(optionLabel);
     },
 );

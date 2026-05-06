@@ -1,6 +1,6 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosSidebar} from "../helpers/pages";
 
 const {When, Then} = createBdd();
 
@@ -16,20 +16,20 @@ function assertSide(side: string): asserts side is SideBarSide {
 
 When("I toggle the {string} sidebar", async ({page}, side: string) => {
     assertSide(side);
-    const backend = new NeosBackendPage(page);
-    await backend.sideBarToggler(side).click();
+    const sidebar = new NeosSidebar(page);
+    await sidebar.toggler(side).click();
 });
 
 // ── Then ──────────────────────────────────────────────────────────────────────
 
 Then("the {string} sidebar should be visible", async ({page}, side: string) => {
     assertSide(side);
-    const backend = new NeosBackendPage(page);
-    await expect(backend.sideBar(side)).toHaveAttribute("aria-hidden", "false");
+    const sidebar = new NeosSidebar(page);
+    await expect(sidebar.container(side)).toHaveAttribute("aria-hidden", "false");
 });
 
 Then("the {string} sidebar should be hidden", async ({page}, side: string) => {
     assertSide(side);
-    const backend = new NeosBackendPage(page);
-    await expect(backend.sideBar(side)).toHaveAttribute("aria-hidden", "true");
+    const sidebar = new NeosSidebar(page);
+    await expect(sidebar.container(side)).toHaveAttribute("aria-hidden", "true");
 });

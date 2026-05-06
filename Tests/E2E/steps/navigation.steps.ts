@@ -1,12 +1,12 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosTree} from "../helpers/pages";
 
 const {When} = createBdd();
 
 When("I navigate to the {string} page", async ({page}, pageTitle: string) => {
-    const backend = new NeosBackendPage(page);
-    await backend.treeNodeLabel(pageTitle).click();
+    const tree = new NeosTree(page);
+    await tree.nodeLabel(pageTitle).click();
 
     // Wait for the focused tree node to reflect the navigation. Using DOM observation
     // (no Redux store access): when a tree node becomes the current document, its

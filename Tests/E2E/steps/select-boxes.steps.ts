@@ -1,22 +1,22 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosDialogs, NeosInspector} from "../helpers/pages";
 
 const {When, Then} = createBdd();
 
 When(
     "I click the {string} SelectBox in the node creation dialog",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.creationDialogSelectBoxHeader(propertyId).click();
+        const dialogs = new NeosDialogs(page);
+        await dialogs.creationSelectBoxHeader(propertyId).click();
     },
 );
 
 When(
     "I click the {string} SelectBox in the inspector",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.inspectorSelectBoxHeader(propertyId).click();
+        const inspector = new NeosInspector(page);
+        await inspector.selectBoxHeader(propertyId).click();
     },
 );
 
@@ -37,8 +37,8 @@ When(
 When(
     "I scroll the inspector so the Element with propertyId {string} is at the bottom of the viewport",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.inspectorEditorWrapper(propertyId).evaluate((propertyEl) => {
+        const inspector = new NeosInspector(page);
+        await inspector.editorWrapper(propertyId).evaluate((propertyEl) => {
             const containerEl = findInspectorScrollContainer(propertyEl);
             const delta = propertyEl.getBoundingClientRect().bottom
                 - containerEl.getBoundingClientRect().bottom;
@@ -113,23 +113,23 @@ When("I scroll the inspector all the way to the top", async ({page}) => {
 When(
     "I hover over the {string} property label in the node creation dialog",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.creationDialogPropertyLabel(propertyId).hover();
+        const dialogs = new NeosDialogs(page);
+        await dialogs.creationPropertyLabel(propertyId).hover();
     },
 );
 
 When(
     "I hover over the {string} property label in the inspector",
     async ({page}, propertyId: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.inspectorPropertyLabel(propertyId).hover();
+        const inspector = new NeosInspector(page);
+        await inspector.propertyLabel(propertyId).hover();
     },
 );
 
 Then("the SelectBox options should open below", async ({page}) => {
-    const backend = new NeosBackendPage(page);
+    const inspector = new NeosInspector(page);
     await expect(async () => {
-        const style = await backend.openSelectBoxInlineStyle();
+        const style = await inspector.openSelectBoxInlineStyle();
         expect(style.top).toMatch(/^\d+(\.\d+)?px$/);
         expect(style.bottom).toBe("");
         expect(style.display).not.toBe("none");
@@ -137,9 +137,9 @@ Then("the SelectBox options should open below", async ({page}) => {
 });
 
 Then("the SelectBox options should open above", async ({page}) => {
-    const backend = new NeosBackendPage(page);
+    const inspector = new NeosInspector(page);
     await expect(async () => {
-        const style = await backend.openSelectBoxInlineStyle();
+        const style = await inspector.openSelectBoxInlineStyle();
         expect(style.bottom).toMatch(/^\d+(\.\d+)?px$/);
         expect(style.top).toBe("");
         expect(style.display).not.toBe("none");
@@ -147,9 +147,9 @@ Then("the SelectBox options should open above", async ({page}) => {
 });
 
 Then("the SelectBox options should be hidden", async ({page}) => {
-    const backend = new NeosBackendPage(page);
+    const inspector = new NeosInspector(page);
     await expect(async () => {
-        const style = await backend.openSelectBoxInlineStyle();
+        const style = await inspector.openSelectBoxInlineStyle();
         expect(style.display).toBe("none");
     }).toPass();
 });

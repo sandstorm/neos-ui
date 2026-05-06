@@ -1,6 +1,6 @@
 import {expect, type Page} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosDialogs, NeosInspector, NeosToolbar, NeosTree} from "../helpers/pages";
 import {
     ChangeRequestTracker,
     clearInlineEditorContent,
@@ -22,28 +22,28 @@ const changeRequests = new ChangeRequestTracker();
 // ── Page creation flow ────────────────────────────────────────────────────────
 
 When('I click the "add new page" toolbar button', async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.pageTreeAddNodeButton().click();
+    const tree = new NeosTree(page);
+    await tree.pageAddButton().click();
 });
 
 When("I select the {string} node type", async ({page}, label: string) => {
-    const backend = new NeosBackendPage(page);
-    await backend.selectNodeTypeItem(label).click();
+    const dialogs = new NeosDialogs(page);
+    await dialogs.selectNodeTypeItem(label).click();
 });
 
 When("I go back from the node creation dialog", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.nodeCreationDialogBackButton().click();
+    const dialogs = new NeosDialogs(page);
+    await dialogs.nodeCreationBack().click();
 });
 
 When("I enter {string} as the new node title", async ({page}, title: string) => {
-    const backend = new NeosBackendPage(page);
-    await backend.nodeCreationDialogTitleInput().fill(title);
+    const dialogs = new NeosDialogs(page);
+    await dialogs.nodeCreationTitleInput().fill(title);
 });
 
 When("I confirm the node creation dialog", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.nodeCreationDialogConfirmButton().click();
+    const dialogs = new NeosDialogs(page);
+    await dialogs.nodeCreationConfirm().click();
 });
 
 Then(
@@ -57,18 +57,19 @@ Then(
 // ── Inline content node creation + CKEditor ──────────────────────────────────
 
 When("I add a(n) {string} node via the content tree", async ({page}, label: string) => {
-    const backend = new NeosBackendPage(page);
+    const tree = new NeosTree(page);
+    const dialogs = new NeosDialogs(page);
     // Open the content tree and explicitly focus the "Content Collection (main)" node —
     // clicking the iframe collection directly is unreliable because the click typically
     // lands on an existing child instead of the collection itself, which leaves
     // `into` mode disabled in the SelectNodeType dialog.
-    await backend.contentTreeToggleButton().click();
-    await backend.treeNodeLabel("Content Collection (main)").click();
-    await backend.contentTreeAddNodeButton().click();
+    await tree.contentToggleButton().click();
+    await tree.nodeLabel("Content Collection (main)").click();
+    await tree.contentAddButton().click();
     // The SelectNodeType dialog renders an InsertModeSelector with the `into` button
     // enabled because the collection accepts content children.
-    await backend.insertModeIntoButtonInline().click();
-    await backend.selectNodeTypeItem(label).click();
+    await dialogs.insertModeIntoInline().click();
+    await dialogs.selectNodeTypeItem(label).click();
 });
 
 When(
@@ -136,15 +137,17 @@ Then("a content-change request should have been sent", () => {
 // ── NodeType help in the SelectNodeType dialog ────────────────────────────────
 
 When("I open the inline content creation dialog", async ({page}) => {
-    const backend = new NeosBackendPage(page);
+    const tree = new NeosTree(page);
+    const toolbar = new NeosToolbar(page);
+    const dialogs = new NeosDialogs(page);
     // Focus the content collection via the content tree before invoking the inline
     // toolbar. Clicking ".neos-contentcollection" directly is unreliable because the
     // click typically lands on an existing child (e.g. the demo Headline) instead of
     // the collection itself — that focuses a leaf node and disables `into` mode.
-    await backend.contentTreeToggleButton().click();
-    await backend.treeNodeLabel("Content Collection (main)").click();
-    await backend.inlineToolbarAddNodeButton().click();
-    await backend.insertModeIntoButtonInline().click();
+    await tree.contentToggleButton().click();
+    await tree.nodeLabel("Content Collection (main)").click();
+    await toolbar.inlineAddNodeButton().click();
+    await dialogs.insertModeIntoInline().click();
 });
 
 When("I click the help icon for the {string} node type", async ({page}, label: string) => {
@@ -173,12 +176,13 @@ Then("the {string} node type should have no help icon", async ({page}, label: st
 When(
     "I open the content creation dialog for {string}",
     async ({page}, nodeTypeLabel: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.contentTreeToggleButton().click();
-        await backend.treeNodeLabel("Content Collection (main)").click();
-        await backend.contentTreeAddNodeButton().click();
-        await backend.insertModeIntoButtonInline().click();
-        await backend.selectNodeTypeItem(nodeTypeLabel).click();
+        const tree = new NeosTree(page);
+        const dialogs = new NeosDialogs(page);
+        await tree.contentToggleButton().click();
+        await tree.nodeLabel("Content Collection (main)").click();
+        await tree.contentAddButton().click();
+        await dialogs.insertModeIntoInline().click();
+        await dialogs.selectNodeTypeItem(nodeTypeLabel).click();
     },
 );
 
@@ -192,8 +196,8 @@ When(
 //     <ul role="listbox" aria-label="dropdown"> — only ONE is open at any time
 
 function creationDialogSelectHeader(page: Page, field: string) {
-    const backend = new NeosBackendPage(page);
-    return backend.creationDialogEditorWrapper(field).locator('[role="button"][aria-haspopup="true"]').first();
+    const dialogs = new NeosDialogs(page);
+    return dialogs.creationEditorWrapper(field).locator('[role="button"][aria-haspopup="true"]').first();
 }
 
 function openDropdownOptions(page: Page) {
@@ -241,11 +245,11 @@ Given("I count the images in the content frame as the baseline", async ({page}) 
 });
 
 When("I open the image picker and select the first available media asset", async ({page}) => {
-    const backend = new NeosBackendPage(page);
+    const inspector = new NeosInspector(page);
     // ImageEditor doesn't forward `id` to the DOM, so anchor via the Label[for=...]
     // and walk up to the editor wrapper. Inside, find the camera-icon IconButton.
-    await backend
-        .inspectorEditorWrapper("image")
+    await inspector
+        .editorWrapper("image")
         .locator("button:has([data-icon='camera'])")
         .click();
     await page
@@ -282,9 +286,9 @@ let creationDialogCropLeft = "";
 When(
     "I open the creation dialog image picker and select the first available media asset",
     async ({page}) => {
-        const backend = new NeosBackendPage(page);
-        await backend
-            .creationDialogEditorWrapper("image")
+        const dialogs = new NeosDialogs(page);
+        await dialogs
+            .creationEditorWrapper("image")
             .locator("button:has([data-icon='camera'])")
             .click();
         await page
@@ -296,8 +300,8 @@ When(
 );
 
 When("I crop the image in the creation dialog", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    const imageEditor = backend.creationDialogEditorWrapper("image");
+    const dialogs = new NeosDialogs(page);
+    const imageEditor = dialogs.creationEditorWrapper("image");
     await imageEditor.locator('button[title="Crop"]').click();
 
     const cropArea = page.locator(".ReactCrop");
@@ -320,8 +324,8 @@ When("I crop the image in the creation dialog", async ({page}) => {
 Then(
     "the inspector image should show the same crop as was applied in the creation dialog",
     async ({page}) => {
-        const backend = new NeosBackendPage(page);
-        const inspectorImg = backend.inspectorEditorWrapper("image").locator("img").first();
+        const inspector = new NeosInspector(page);
+        const inspectorImg = inspector.editorWrapper("image").locator("img").first();
         await expect(inspectorImg).toHaveCSS("left", creationDialogCropLeft);
     },
 );
@@ -331,20 +335,21 @@ Then(
 When(
     "I add a(n) {string} node into {string} via the content tree",
     async ({page}, nodeType: string, targetNode: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.treeNodeLabel(targetNode).click();
-        await backend.contentTreeAddNodeButton().click();
-        await backend.insertModeIntoButtonInline().click();
-        await backend.selectNodeTypeItem(nodeType).click();
+        const tree = new NeosTree(page);
+        const dialogs = new NeosDialogs(page);
+        await tree.nodeLabel(targetNode).click();
+        await tree.contentAddButton().click();
+        await dialogs.insertModeIntoInline().click();
+        await dialogs.selectNodeTypeItem(nodeType).click();
     },
 );
 
 Then("the {string} content tree node should be visible", async ({page}, label: string) => {
-    const backend = new NeosBackendPage(page);
+    const tree = new NeosTree(page);
     // Use partial match — some node types (e.g. Text_Test) compute their tree label
     // from a property value, so the rendered label is "Text_Test {value}" rather than
     // an exact "Text_Test".
-    await expect(backend.treeNodeLabelContaining(label).first()).toBeVisible();
+    await expect(tree.nodeLabelContaining(label).first()).toBeVisible();
 });
 
 Then("the text node should be placed inside the container's inner wrap", async ({page}) => {
@@ -372,20 +377,21 @@ Then(
 When(
     "I copy the {string} content tree node and paste it after",
     async ({page}, nodeLabel: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.treeNodeLabel(nodeLabel).click();
-        await backend.contentTreeCopySelectedNodeButton().click();
-        await backend.contentTreePasteClipboardNodeButton().click();
-        await backend.insertModeAfterButton().click();
-        await backend.insertModeApplyButton().click();
+        const tree = new NeosTree(page);
+        const dialogs = new NeosDialogs(page);
+        await tree.nodeLabel(nodeLabel).click();
+        await tree.contentCopySelectedButton().click();
+        await tree.contentPasteButton().click();
+        await dialogs.insertModeAfter().click();
+        await dialogs.insertModeApply().click();
     },
 );
 
 Then(
     "there should be {int} {string} nodes in the content tree",
     async ({page}, count: number, label: string) => {
-        const backend = new NeosBackendPage(page);
-        await expect(backend.treeNodeLabelContaining(label)).toHaveCount(count);
+        const tree = new NeosTree(page);
+        await expect(tree.nodeLabelContaining(label)).toHaveCount(count);
     },
 );
 

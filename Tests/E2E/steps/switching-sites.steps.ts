@@ -1,6 +1,6 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage, NeosLoginPage} from "../helpers/general-pages";
+import {NeosLoginPage, NeosToolbar} from "../helpers/pages";
 
 const {When, Then} = createBdd();
 
@@ -19,9 +19,9 @@ When(
 );
 
 When("I switch to the site at {string} via the main menu", async ({page}, host: string) => {
-    const backend = new NeosBackendPage(page);
-    await backend.menuToggle().click();
-    await backend.drawerSiteLink(host).click();
+    const toolbar = new NeosToolbar(page);
+    await toolbar.menuToggle().click();
+    await toolbar.drawerSiteLink(host).click();
     await page.waitForURL(new RegExp(`^https?://${host.replace(/\./g, "\\.")}`));
     await page.waitForLoadState("networkidle");
 });

@@ -1,6 +1,6 @@
 import {expect} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosDialogs, NeosToolbar, NeosTree} from "../helpers/pages";
 import {contentFrame} from "../helpers/content-iframe";
 
 const {When, Then} = createBdd();
@@ -15,89 +15,94 @@ const {When, Then} = createBdd();
 When(
     "I add a {string} child page named {string}",
     async ({page}, nodeType: string, title: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.pageTreeAddNodeButton().click();
-        await backend.insertModeIntoButton().click();
-        await backend.selectNodeTypeItem(nodeType).click();
-        await backend.nodeCreationDialogTitleInput().fill(title);
-        await backend.nodeCreationDialogConfirmButton().click();
+        const tree = new NeosTree(page);
+        const dialogs = new NeosDialogs(page);
+        await tree.pageAddButton().click();
+        await dialogs.insertModeInto().click();
+        await dialogs.selectNodeTypeItem(nodeType).click();
+        await dialogs.nodeCreationTitleInput().fill(title);
+        await dialogs.nodeCreationConfirm().click();
     },
 );
 
 When(
     "I add a {string} page named {string}",
     async ({page}, nodeType: string, title: string) => {
-        const backend = new NeosBackendPage(page);
-        await backend.pageTreeAddNodeButton().click();
-        await backend.selectNodeTypeItem(nodeType).click();
-        await backend.nodeCreationDialogTitleInput().fill(title);
-        await backend.nodeCreationDialogConfirmButton().click();
+        const tree = new NeosTree(page);
+        const dialogs = new NeosDialogs(page);
+        await tree.pageAddButton().click();
+        await dialogs.selectNodeTypeItem(nodeType).click();
+        await dialogs.nodeCreationTitleInput().fill(title);
+        await dialogs.nodeCreationConfirm().click();
     },
 );
 
 // ── Deletion ─────────────────────────────────────────────────────────────────
 
 When("I delete the selected page tree node", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.pageTreeDeleteSelectedNodeButton().click();
-    await backend.deleteNodeModalConfirmButton().click();
+    const tree = new NeosTree(page);
+    const dialogs = new NeosDialogs(page);
+    await tree.pageDeleteSelectedButton().click();
+    await dialogs.deleteNodeConfirm().click();
 });
 
 When("I open the content tree and select {string}", async ({page}, name: string) => {
-    const backend = new NeosBackendPage(page);
-    await backend.contentTreeToggleButton().click();
-    await backend.treeNodeLabel(name).click();
+    const tree = new NeosTree(page);
+    await tree.contentToggleButton().click();
+    await tree.nodeLabel(name).click();
 });
 
 When("I delete the selected content tree node", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.contentTreeDeleteSelectedNodeButton().click();
-    await backend.deleteNodeModalConfirmButton().click();
+    const tree = new NeosTree(page);
+    const dialogs = new NeosDialogs(page);
+    await tree.contentDeleteSelectedButton().click();
+    await dialogs.deleteNodeConfirm().click();
 });
 
 // ── Discard all ──────────────────────────────────────────────────────────────
 
 When("I discard all changes", async ({page}) => {
-    const backend = new NeosBackendPage(page);
+    const toolbar = new NeosToolbar(page);
+    const dialogs = new NeosDialogs(page);
     // While `isSaving` is true PublishDropDown renders the DropDown.Header with
     // no onClick handler — the toggle becomes a no-op. Wait for the main publish
     // button label to flip back from "saving" before opening the dropdown.
-    await expect(backend.publishDropDownPublishButton()).not.toHaveText(/saving/i);
+    await expect(toolbar.publish()).not.toHaveText(/saving/i);
     // Re-fetch the toggle each time the dropdown is interacted with — the
     // saving / non-saving branches in PublishDropDown render different
     // DropDown.Header instances, and stale references can race the React commit.
-    await openPublishDropDown(backend);
-    await backend.publishDropDownDiscardAllButton().click();
-    await backend.discardDialogConfirmButton().click();
+    await openPublishDropDown(toolbar);
+    await toolbar.discardAll().click();
+    await dialogs.discardConfirm().click();
     // Discarding many changes can take a while — the original TestCafe suite
     // also waited up to 30 s for the result dialog.
-    await expect(backend.discardDialogAcknowledgeButton()).toBeVisible({timeout: 30_000});
-    await backend.discardDialogAcknowledgeButton().click();
+    await expect(dialogs.discardAcknowledge()).toBeVisible({timeout: 30_000});
+    await dialogs.discardAcknowledge().click();
 });
 
-async function openPublishDropDown(backend: NeosBackendPage): Promise<void> {
+async function openPublishDropDown(toolbar: NeosToolbar): Promise<void> {
     // The DiscardAll button only mounts when DropDown.Contents is open. Click the
     // toggle, then verify the panel actually opened — retry once if the click
     // was swallowed by a concurrent React rerender.
-    await backend.publishDropDownToggle().click();
+    await toolbar.publishToggle().click();
     try {
-        await expect(backend.publishDropDownDiscardAllButton()).toBeVisible({timeout: 2_000});
+        await expect(toolbar.discardAll()).toBeVisible({timeout: 2_000});
     } catch {
-        await backend.publishDropDownToggle().click();
-        await expect(backend.publishDropDownDiscardAllButton()).toBeVisible();
+        await toolbar.publishToggle().click();
+        await expect(toolbar.discardAll()).toBeVisible();
     }
 }
 
 // ── Tree visibility ──────────────────────────────────────────────────────────
 
 Then("the {string} tree node should be visible", async ({page}, name: string) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.treeNodeLabel(name)).toBeVisible();
+    const tree = new NeosTree(page);
+    await expect(tree.nodeLabel(name)).toBeVisible();
 });
 
 Then("no tree node {string} should be visible", async ({page}, name: string) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.treeNodeLabel(name)).toHaveCount(0);
+    const tree = new NeosTree(page);
+    await expect(tree.nodeLabel(name)).toHaveCount(0);
 });
 
 Then("the focused tree node should be {string}", async ({page}, name: string) => {
@@ -113,19 +118,19 @@ Then("the focused tree node should be {string}", async ({page}, name: string) =>
 // attribute; we close it again afterwards to leave a clean UI state.
 
 Then("there should be unpublished changes", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.publishDropDownPublishButton()).not.toHaveText(/saving/i);
-    await openPublishDropDown(backend);
-    await expect(backend.publishDropDownDiscardAllButton()).toBeEnabled();
-    await backend.publishDropDownToggle().click();
+    const toolbar = new NeosToolbar(page);
+    await expect(toolbar.publish()).not.toHaveText(/saving/i);
+    await openPublishDropDown(toolbar);
+    await expect(toolbar.discardAll()).toBeEnabled();
+    await toolbar.publishToggle().click();
 });
 
 Then("there should be no unpublished changes", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.publishDropDownPublishButton()).not.toHaveText(/saving/i);
-    await openPublishDropDown(backend);
-    await expect(backend.publishDropDownDiscardAllButton()).toBeDisabled();
-    await backend.publishDropDownToggle().click();
+    const toolbar = new NeosToolbar(page);
+    await expect(toolbar.publish()).not.toHaveText(/saving/i);
+    await openPublishDropDown(toolbar);
+    await expect(toolbar.discardAll()).toBeDisabled();
+    await toolbar.publishToggle().click();
 });
 
 // ── Content iframe assertions ────────────────────────────────────────────────

@@ -1,41 +1,41 @@
 import {expect, type Page} from "@playwright/test";
 import {createBdd} from "playwright-bdd";
-import {NeosBackendPage} from "../helpers/general-pages";
+import {NeosDialogs, NeosInspector, NeosTree} from "../helpers/pages";
 
 const {When, Then} = createBdd();
 
 // ── When ──────────────────────────────────────────────────────────────────────
 
 When("I refresh the document tree", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.refreshDocumentTreeButton().click();
+    const tree = new NeosTree(page);
+    await tree.refreshButton().click();
 });
 
 When("I set the inspector {string} field to {string}", async ({page}, propertyName: string, value: string) => {
-    const backend = new NeosBackendPage(page);
-    await backend.inspectorField(propertyName).fill(value);
+    const inspector = new NeosInspector(page);
+    await inspector.field(propertyName).fill(value);
 });
 
 When("I clear the inspector {string} field", async ({page}, propertyName: string) => {
-    const backend = new NeosBackendPage(page);
-    await backend.inspectorField(propertyName).fill("");
+    const inspector = new NeosInspector(page);
+    await inspector.field(propertyName).fill("");
 });
 
 When("I apply the inspector changes", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.inspectorApplyButton().click();
+    const inspector = new NeosInspector(page);
+    await inspector.applyButton().click();
 });
 
 When("I discard the inspector changes", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.inspectorDiscardButton().click();
+    const inspector = new NeosInspector(page);
+    await inspector.discardButton().click();
 });
 
 When(
     "I append {string} to the inspector {string} field",
     async ({page}, text: string, propertyName: string) => {
-        const backend = new NeosBackendPage(page);
-        const field = backend.inspectorField(propertyName);
+        const inspector = new NeosInspector(page);
+        const field = inspector.field(propertyName);
         await field.focus();
         await field.press("End");
         await field.pressSequentially(text);
@@ -43,7 +43,7 @@ When(
 );
 
 When("I sync the URL path segment from the title", async ({page}) => {
-    const backend = new NeosBackendPage(page);
+    const inspector = new NeosInspector(page);
     // The URI sync reads options.title which the inspector resolves from the
     // ClientEval expression `node.properties.title` against transient state.
     // The inspector runs that resolution on a 250ms debounce (leading=true,
@@ -51,49 +51,49 @@ When("I sync the URL path segment from the title", async ({page}) => {
     // Mirror the 200ms wait the original testcafe suite used so we click
     // sync only after the resolved title has settled.
     await page.waitForTimeout(300);
-    await backend.uriPathSegmentSyncButton().click();
+    await inspector.uriPathSegmentSyncButton().click();
 });
 
 When("I click outside the inspector to trigger the unapplied-changes overlay", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.unappliedChangesOverlay().click();
+    const dialogs = new NeosDialogs(page);
+    await dialogs.unappliedOverlay().click();
 });
 
 When("I resume editing in the unapplied-changes dialog", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.unappliedChangesResumeButton().click();
+    const dialogs = new NeosDialogs(page);
+    await dialogs.unappliedResume().click();
 });
 
 When("I discard the inspector changes from the unapplied-changes dialog", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await backend.unappliedChangesDiscardButton().click();
+    const dialogs = new NeosDialogs(page);
+    await dialogs.unappliedDiscard().click();
 });
 
 Then("the unapplied-changes dialog should be visible", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.unappliedChangesDialog()).toBeVisible();
+    const dialogs = new NeosDialogs(page);
+    await expect(dialogs.unapplied()).toBeVisible();
 });
 
 Then("the unapplied-changes dialog should not be visible", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.unappliedChangesDialog()).toHaveCount(0);
+    const dialogs = new NeosDialogs(page);
+    await expect(dialogs.unapplied()).toHaveCount(0);
 });
 
 // ── Then ──────────────────────────────────────────────────────────────────────
 
 Then("the inspector {string} field should show {string}", async ({page}, propertyName: string, expected: string) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.inspectorField(propertyName)).toHaveValue(expected);
+    const inspector = new NeosInspector(page);
+    await expect(inspector.field(propertyName)).toHaveValue(expected);
 });
 
 Then("the active inspector tab should show {int} validation error(s)", async ({page}, expected: number) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.activeInspectorTabBadge()).toHaveText(String(expected));
+    const inspector = new NeosInspector(page);
+    await expect(inspector.activeTabBadge()).toHaveText(String(expected));
 });
 
 Then("the active inspector tab should show no validation errors", async ({page}) => {
-    const backend = new NeosBackendPage(page);
-    await expect(backend.activeInspectorTabBadge()).toHaveCount(0);
+    const inspector = new NeosInspector(page);
+    await expect(inspector.activeTabBadge()).toHaveCount(0);
 });
 
 // ── ClientEval: dependent SelectBox options in the inspector ─────────────────
@@ -104,8 +104,8 @@ Then("the active inspector tab should show no validation errors", async ({page})
 // only one is open at any given time.
 
 function inspectorSelectHeader(page: Page, field: string) {
-    const backend = new NeosBackendPage(page);
-    return backend.inspectorSelectBoxHeader(field).first();
+    const inspector = new NeosInspector(page);
+    return inspector.selectBoxHeader(field).first();
 }
 
 function openDropdownOptions(page: Page) {

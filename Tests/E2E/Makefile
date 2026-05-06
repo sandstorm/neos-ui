@@ -32,7 +32,7 @@ generate-bdd-files:
 	echo "${GREEN}generate BDD files from feature files${RESET}"; \
 	cd $(E2E_DIR) && npm run generate-tests
 
-## Run all E2E tests (auto-starts SUT, tears it down afterwards).
+## Run all E2E tests (playwright auto-starts SUT, tears it down afterwards).
 test:
 	cd $(E2E_DIR) && npm run test
 
@@ -40,7 +40,7 @@ test:
 test-ui:
 	cd $(E2E_DIR) && REUSE_EXISTING_SUT=1 npm run test -- --ui
 
-## Start SUT containers in the background (skips test run).
+## Start SUT containers in the background (skips test run). Handy for debugging and testing manually during development.
 start-sut:
 	docker compose -f $(NEOS_COMPOSE) up -d --build
 
@@ -56,4 +56,4 @@ enter-sut:
 sut-down:
 	echo "${YELLOW}Shutting down SUT and removing volumes.${RESET}"
 	docker compose -f $(NEOS_COMPOSE) down
-	docker volume rm neos_ui_e2e_db_neos_data
+	docker volume rm neos_ui_e2e_db_neos_data || echo "${YELLOW}Volume already removed.${RESET}"

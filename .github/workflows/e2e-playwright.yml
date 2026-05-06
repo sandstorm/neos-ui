@@ -56,7 +56,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Pre-build SUT Docker image (with persistent layer cache)
         # Builds the SUT image once and persists layers in GitHub's actions cache (`type=gha`).
@@ -64,7 +64,7 @@ jobs:
         # Dockerfile and overrides have not changed.
         #   `load: true` exposes the tagged image to the local Docker daemon so `docker compose up` (in the Playwright
         #   webServer) finds it without rebuilding.
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Tests/E2E/system_under_test/Dockerfile

@@ -10,12 +10,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 # library empty and breaking any test that picks an asset.
 RUN install-php-extensions \
     intl \
-    bcmath \
-    opcache \
-    pdo \
     pdo_mysql \
-    xsl \
-    ffi \
     gd \
     redis
 
